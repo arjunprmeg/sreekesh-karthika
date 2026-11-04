@@ -17,7 +17,7 @@ export const weddingConfig = {
     maps: "https://maps.app.goo.gl/9HpKPjxdM1rJcyHJ6",
   },
   images: {
-    couple: "./assets/couple/bride-portrait.jpeg",
+    couple: "./assets/couple/couple-portrait-NEW.png",
     bride: "./assets/original-invitation.jpeg",
     groom: "./assets/couple/groom-portrait.jpeg",
     peacock: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/pngtree-golden-peacock-blue-wedding-card-image_15616803-E4qCgFAhqijeX9zuiHOLWQB1mh35bx.jpg",

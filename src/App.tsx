@@ -132,7 +132,7 @@ export default function App() {
     <InvitationCover open={opened} onOpen={openInvitation} />
     <main className={opened ? "revealed" : ""}>
       <section className="hero" id="home">
-        <div className="hero-art"><div className="portrait-frame"><img src={config.images.couple} alt="Sreekesh and Karthika together outdoors" /></div></div>
+        <div className="hero-art"><div className="portrait-frame"><img src={config.images.couple} alt="Sreekesh and Karthika together" /></div></div>
         <div className="hero-copy"><p className="eyebrow">Save the date · 24.01.2027</p><h1><span>ശ്രീകേഷ്</span><i>&</i><span>കാർത്തിക</span></h1><p className="malayalam-welcome">ഞങ്ങളുടെ വിവാഹത്തിലേക്ക്<br/>സ്നേഹപൂർവ്വം സ്വാഗതം</p><p className="date-line">24 January 2027 <b>·</b> Sunday</p><a href="#blessing" className="scroll-cue">Begin our story <ChevronDown /></a></div>
       </section>
 

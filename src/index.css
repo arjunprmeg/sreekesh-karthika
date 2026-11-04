@@ -4,3 +4,4 @@
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;animation:none!important;transition-duration:.01ms!important}.door{transition:none}}
 
 .music-toggle{position:fixed;z-index:110;top:calc(1rem + env(safe-area-inset-top));right:calc(1rem + env(safe-area-inset-right));display:inline-flex;align-items:center;justify-content:center;gap:.5rem;min-height:48px;padding:.65rem 1rem;border:1px solid var(--gold);border-radius:2rem;background:var(--blue);color:#fff9ef;box-shadow:0 4px 20px rgba(0,0,0,.2);font-size:.9rem}.music-toggle svg{width:19px;height:19px}.music-toggle:hover{background:#25345b}.music-toggle:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+.hero-art .portrait-frame{border:0;padding:0;border-radius:0}.hero-art .portrait-frame img{object-fit:contain;object-position:center bottom}.hero-art:after{display:none}
