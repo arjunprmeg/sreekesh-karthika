@@ -137,10 +137,32 @@ try {
   assert.equal(downloads.length, 2)
   assert.ok(downloads[0].includes("DTSTART:20270124T030000Z"))
   assert.ok(downloads[1].includes("DTSTART:20270126T083000Z"))
-  await evaluate(`Object.defineProperty(navigator,'share',{configurable:true,value:async data=>{window.sharedInvitation=data}});document.querySelector('.quick-actions button').click()`)
-  assert.ok((await evaluate("window.sharedInvitation")).url.endsWith("/sreekesh-karthika/"))
-  await evaluate(`Object.defineProperty(navigator,'share',{configurable:true,value:undefined});Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:async text=>{window.copiedInvitation=text}}});document.querySelector('.closing-actions .gold').click()`)
-  assert.ok((await evaluate("window.copiedInvitation")).endsWith("/sreekesh-karthika/"))
+  const whatsappClicks = await evaluate(`(()=>{
+    window.whatsappClicks=[];window.nativeShareCalls=0;window.clipboardCalls=0;
+    Object.defineProperty(navigator,'share',{configurable:true,value:async()=>{window.nativeShareCalls++}});
+    Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:async()=>{window.clipboardCalls++}}});
+    const links=[...document.querySelectorAll('a[href^="https://wa.me/"]')];
+    for(const link of links){link.addEventListener('click',event=>{event.preventDefault();window.whatsappClicks.push(link.href)});link.click()}
+    return {urls:window.whatsappClicks,nativeShare:window.nativeShareCalls,clipboard:window.clipboardCalls};
+  })()`)
+  assert.equal(whatsappClicks.urls.length, 2, "Both Share controls navigate to WhatsApp")
+  for (const href of whatsappClicks.urls) {
+    const message = new URL(href).searchParams.get("text")
+    assert.ok(message.includes("ശ്രീകേഷ് & കാർത്തിക"))
+    assert.ok(message.includes("https://sreekesh-karthika.vercel.app/"))
+    assert.ok(message.includes("24 ജനുവരി 2027"))
+    assert.ok(message.includes("26 ജനുവരി 2027"))
+    assert.ok(!message.includes("localhost"))
+  }
+  assert.equal(whatsappClicks.nativeShare, 0)
+  assert.equal(whatsappClicks.clipboard, 0, "Sharing never copies the link")
+  const html = await (await fetch("http://127.0.0.1:4173/sreekesh-karthika/")).text()
+  assert.match(html, /property="og:image" content="https:\/\/sreekesh-karthika.vercel.app\/assets\/couple\/previ.jpeg"/)
+  assert.match(html, /property="og:image:width" content="1076"/)
+  assert.match(html, /property="og:image:height" content="1599"/)
+  const previewImage = await fetch("http://127.0.0.1:4173/sreekesh-karthika/assets/couple/previ.jpeg")
+  assert.equal(previewImage.status, 200)
+  assert.match(previewImage.headers.get("content-type"), /image\/jpeg/)
   await send("Page.setDownloadBehavior", { behavior: "allow", downloadPath: reviewDir })
   await evaluate("document.querySelector('.closing-actions a[download]').click()")
   let letter
@@ -180,7 +202,7 @@ try {
   assert.equal(await evaluate("document.querySelector('main').inert"), false, "Keyboard alternative opens invitation")
   assert.deepEqual(assetErrors, [])
   assert.deepEqual(runtimeErrors, [])
-  console.log("Mouse/touch slider, partial-drag reset, keyboard opening, entrance animations, JPEG download, countdown, maps, calendars, sharing and music passed.")
+  console.log("WhatsApp navigation (no clipboard), preview metadata/image, slider, animations, invitation download, countdown, maps, calendars and music passed.")
   console.log(`Screenshots: ${reviewDir}`)
 } finally {
   socket?.close()

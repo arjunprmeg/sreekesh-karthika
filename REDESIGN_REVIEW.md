@@ -15,7 +15,9 @@ Screenshots: [slide-to-open cover](review/cover-390.png) · [mobile hero](review
 ## Changes
 
 - `src/index.css`: replaced the previous presentation with a narrow navy, antique-gold and ivory invitation, constrained to 620px on desktop; added safe-area spacing, visible keyboard focus and reduced-motion support.
-- `src/App.tsx`: layered the supplied decorative artwork and existing couple portrait separately from HTML names/actions; added lazy images, focus handling and an inert closed invitation. The cover now has an iPhone-style draggable thumb: releasing before 90% resets it, completing the slide opens the doors; Enter/Space/End and arrow keys provide keyboard access. The former Copy Link button is now Download Invitation Letter, using the exact supplied `letter-of-invite.jpeg`. Sharing retains its clipboard fallback with an accessible status message.
+- `src/App.tsx`: layered the supplied decorative artwork and existing couple portrait separately from HTML names/actions; added lazy images, focus handling and an inert closed invitation. The cover has an iPhone-style draggable thumb: releasing before 90% resets it, completing the slide opens the doors; Enter/Space/End and arrow keys provide keyboard access. The former Copy Link button is now Download Invitation Letter, using the exact supplied `letter-of-invite.jpeg`.
+- `src/share.ts`: both Share controls open WhatsApp directly with the Malayalam invitation and `https://sreekesh-karthika.vercel.app/`. Sharing does not use the clipboard or native share sheet. `src/config.ts` defines the public site URL.
+- `index.html` and `app/layout.tsx`: Open Graph and Twitter tags expose the supplied `previ.jpeg` photo, title, description and canonical Vercel URL in the initial HTML for link preview crawlers on both hosting builds.
 - `src/index.css`: the date and Malayalam names enter in a staggered fade/rise after opening. Reduced-motion mode disables these animations and the slider label shimmer.
 - All `h2` headings have a soft gold glow, and the hero portrait slowly zooms for depth. Four independently isolated lamps swing on both the cover and hero while the arch stays stationary. These animations respect reduced-motion settings.
 - Individual bride (`1.png`) and groom (`2.png`) portraits appear above the footer, using optimized WebP copies, gold arch frames and Malayalam names. The footer credits Team KTimes and links to its contact page.
@@ -40,7 +42,7 @@ Screenshots: [slide-to-open cover](review/cover-390.png) · [mobile hero](review
 - Both map links match the supplied URLs.
 - Wedding calendar: 24 January 2027, 03:00–04:00 UTC = 08:30–09:30 Asia/Kolkata.
 - Reception calendar: 26 January 2027, 08:30–10:30 UTC = 14:00–16:00 Asia/Kolkata.
-- Both calendar buttons produce the correct downloads. The invitation letter download was saved in Chrome and byte-compared with the supplied JPEG. Share and its clipboard fallback passed with browser API stubs. Native device share-sheet presentation was not tested.
+- Both calendar buttons produce the correct downloads. The invitation letter download was saved in Chrome and byte-compared with the supplied JPEG. Browser checks validate both WhatsApp destination URLs and encoded Malayalam message without sending a message, and confirm sharing never calls the clipboard or native share API. Preview metadata is in the initial HTML and the JPEG is accessible. Actual preview rendering remains controlled by WhatsApp.
 - Date/name animation delay and final visibility passed, and both the entrance animation and slider shimmer disable under reduced motion.
 - Browser checks confirmed the lamps change their transform over time, the arch stays stationary and reduced motion disables the lamp swing.
 - Audio starts, loops, and pauses with the sticky toggle in Chrome. Mobile browsers may require opening the invitation or tapping Music before playback.

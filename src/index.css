@@ -137,7 +137,6 @@ dd{margin:0;font-size:1.1rem;line-height:1.6;overflow-wrap:anywhere}
 .revealed .hero h1>span:first-child{animation:invitation-reveal .95s ease-out 1.2s both}
 .revealed .hero h1>i{animation:invitation-reveal .85s ease-out 1.4s both}
 .revealed .hero h1>span:last-child{animation:invitation-reveal .95s ease-out 1.6s both}
-.closing .share-status{min-height:1.3rem;margin:-.75rem 0 1rem;font:italic .85rem/1.5 "Cormorant Garamond",serif;color:var(--gold)}
 @keyframes invitation-reveal{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
 @keyframes slide-shimmer{0%,100%{background-position:100% 0}55%{background-position:0 0}}
 

@@ -3,6 +3,7 @@ import type { CSSProperties, PointerEvent } from "react"
 import { ArrowRight, CalendarDays, ChevronDown, Download, ExternalLink, Heart, MapPin, Share2, Volume2, VolumeX } from "lucide-react"
 import { weddingConfig as config } from "./config"
 import { buildCalendar } from "./calendar"
+import { whatsappShareUrl } from "./share"
 
 const pad = (n: number) => String(n).padStart(2, "0")
 
@@ -155,7 +156,6 @@ function EventCard({ type }: { type: "wedding" | "reception" }) {
 
 export default function App() {
   const [opened, setOpened] = useState(false)
-  const [shareCopied, setShareCopied] = useState(false)
   const audioRef = useRef<HTMLAudioElement>(null)
   const musicEnabled = useRef(true)
   const [musicPlaying, setMusicPlaying] = useState(false)
@@ -189,16 +189,6 @@ export default function App() {
       playMusic()
     }
   }
-  const copyLink = async () => {
-    const url = window.location.href
-    try { await navigator.clipboard.writeText(url) } catch { const area = document.createElement("textarea"); area.value = url; document.body.append(area); area.select(); document.execCommand("copy"); area.remove() }
-    setShareCopied(true); window.setTimeout(() => setShareCopied(false), 2200)
-  }
-  const share = async () => {
-    const text = "ശ്രീകേഷിന്റെയും കാർത്തികയുടെയും വിവാഹത്തിലേക്ക് സ്നേഹപൂർവ്വം ക്ഷണിക്കുന്നു. 💛\n\nവിവാഹം: 24 ജനുവരി 2027, ഗുരുവായൂർ ക്ഷേത്രം.\nവിവാഹ സൽക്കാരം: 26 ജനുവരി 2027, രശ്മിവരം, പയ്യോളി."
-    if (navigator.share) { try { await navigator.share({ title: "Sreekesh & Karthika — Wedding Invitation", text, url: window.location.href }); return } catch (error) { if (error instanceof Error && error.name === "AbortError") return } }
-    await copyLink()
-  }
   return <>
     <audio ref={audioRef} src="./assets/Thanthaay.mp3" autoPlay loop preload="metadata"
       onPlay={() => setMusicPlaying(true)} onPause={() => setMusicPlaying(false)}
@@ -219,7 +209,7 @@ export default function App() {
           <div className="portrait-frame"><img src={config.images.couple} width="1000" height="964" fetchPriority="high" decoding="async" alt="Sreekesh and Karthika together" /></div>
         </div>
         <div className="hero-copy"><p className="eyebrow">Save the date · 24 Jan 2027</p><h1><span>{config.couple.groom}</span><i>&</i><span>{config.couple.bride}</span></h1><div className="fine-rule" aria-hidden="true">✦</div><p className="malayalam-welcome">ഞങ്ങളുടെ വിവാഹത്തിലേക്ക്<br/>സ്നേഹപൂർവ്വം സ്വാഗതം</p>
-          <nav className="quick-actions" aria-label="Invitation actions"><button onClick={share}><Share2 /><span>Share</span></button><a href={config.wedding.maps} target="_blank" rel="noreferrer"><MapPin /><span>Location</span></a><button onClick={() => downloadCalendar("wedding")}><CalendarDays /><span>Calendar</span></button></nav>
+          <nav className="quick-actions" aria-label="Invitation actions"><a href={whatsappShareUrl} aria-label="Share invitation on WhatsApp"><Share2 /><span>Share</span></a><a href={config.wedding.maps} target="_blank" rel="noreferrer"><MapPin /><span>Location</span></a><button onClick={() => downloadCalendar("wedding")}><CalendarDays /><span>Calendar</span></button></nav>
           <a href="#blessing" className="scroll-cue">Our celebration <ChevronDown /></a>
         </div>
         <img className="lotus-art" src="./assets/decor/lotus-footer.webp" width="941" height="281" alt="" aria-hidden="true" />
@@ -235,7 +225,7 @@ export default function App() {
 
       <section className="events" id="events"><BackgroundArt variant="events" /><SectionHeading eyebrow="Join our celebrations">Two Days, One Beautiful Beginning</SectionHeading><div className="event-list"><EventCard type="wedding"/><EventCard type="reception"/></div></section>
 
-      <section className="closing"><BackgroundArt variant="closing" /><span className="closing-mark">SK</span><p>നിങ്ങളുടെ സാന്നിധ്യവും അനുഗ്രഹവും<br/>ഞങ്ങൾക്ക് അമൂല്യമാണ്</p><h2>With love, we await you.</h2><div className="closing-actions"><button className="button gold" onClick={share}><Share2 />Share Invitation</button><a className="button outline" href="./assets/couple/letter-of-invite.jpeg" download="Sreekesh-Karthika-Invitation.jpeg"><Download />Download Invitation Letter</a></div><p className="share-status" role="status">{shareCopied ? "Invitation link copied — ready to share." : ""}</p><Heart className="heart" aria-hidden="true" /></section>
+      <section className="closing"><BackgroundArt variant="closing" /><span className="closing-mark">SK</span><p>നിങ്ങളുടെ സാന്നിധ്യവും അനുഗ്രഹവും<br/>ഞങ്ങൾക്ക് അമൂല്യമാണ്</p><h2>With love, we await you.</h2><div className="closing-actions"><a className="button gold" href={whatsappShareUrl}><Share2 />Share on WhatsApp</a><a className="button outline" href="./assets/couple/letter-of-invite.jpeg" download="Sreekesh-Karthika-Invitation.jpeg"><Download />Download Invitation Letter</a></div><Heart className="heart" aria-hidden="true" /></section>
       <section className="couple-intro" aria-label="The bride and groom">
         <BackgroundArt variant="closing" />
         <SectionHeading eyebrow="A new chapter">The Bride &amp; Groom</SectionHeading>
