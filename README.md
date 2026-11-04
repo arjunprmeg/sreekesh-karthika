@@ -1,4 +1,4 @@
-# Sreekesh & Karthika Wedding Invitation
+# Sreekesh & Kashmeera Wedding Invitation
 
 A static, mobile-first Kerala Hindu wedding invitation built with React, TypeScript, and Vite.
 

@@ -1,6 +1,6 @@
 export const weddingConfig = {
   siteUrl: "https://sreekesh-karthika.vercel.app/",
-  couple: { groom: "ശ്രീകേഷ്", bride: "കാർത്തിക", english: "Sreekesh & Karthika" },
+  couple: { groom: "ശ്രീകേഷ്", bride: "കാശ്മീര", english: "Sreekesh & Kashmeera" },
   wedding: {
     dateLabel: "Sunday, 24 January 2027",
     timeLabel: "8:30 AM – 9:30 AM IST",

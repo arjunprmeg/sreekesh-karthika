@@ -12,7 +12,7 @@ function downloadCalendar(type: "wedding" | "reception") {
   const url = URL.createObjectURL(new Blob([ics], { type: "text/calendar;charset=utf-8" }))
   const link = document.createElement("a")
   link.href = url
-  link.download = `${type}-sreekesh-karthika.ics`
+  link.download = `${type}-sreekesh-kashmeera.ics`
   document.body.append(link)
   link.click()
   link.remove()
@@ -125,7 +125,7 @@ function InvitationCover({ open, onOpen }: { open: boolean; onOpen: () => void }
     <div className="cover-content">
       <span className="cover-kicker">Together with their families</span>
       <span className="cover-seal" aria-hidden="true">SK</span>
-      <span className="cover-names">ശ്രീകേഷ് <i>&</i> കാർത്തിക</span>
+      <span className="cover-names">{config.couple.groom} <i>&</i> {config.couple.bride}</span>
       <span className="cover-save">Save the Date</span>
       <span className="cover-date">24 · January · 2027</span>
     </div>
@@ -147,7 +147,7 @@ function EventCard({ type }: { type: "wedding" | "reception" }) {
       <span className="event-number">{wedding ? "01" : "02"}</span>
       <p className="event-kicker">{wedding ? "The sacred ceremony" : "An afternoon of celebration"}</p>
       <h3>{wedding ? "വിവാഹം" : "വിവാഹ സൽക്കാരം"}</h3>
-      <p className="event-couple">ശ്രീകേഷ് <i>&</i> കാർത്തിക</p>
+      <p className="event-couple">{config.couple.groom} <i>&</i> {config.couple.bride}</p>
       <dl><div><dt>Date</dt><dd>{event.dateLabel}</dd></div><div><dt>Time</dt><dd>{event.timeLabel}</dd></div><div><dt>Venue</dt><dd>{event.venue}</dd></div></dl>
       <div className="actions"><a className="button primary" href={event.maps} target="_blank" rel="noreferrer"><MapPin />Get {wedding ? "Wedding" : "Reception"} Directions<ExternalLink /></a><button className="button secondary" onClick={() => downloadCalendar(type)}><CalendarDays />Add to Calendar</button></div>
     </div>
@@ -206,7 +206,7 @@ export default function App() {
         <div className="hero-art">
           <img className="arch-art" src="./assets/decor/arch-without-lamps.webp" width="941" height="890" alt="" aria-hidden="true" />
           <HangingLamps />
-          <div className="portrait-frame"><img src={config.images.couple} width="1000" height="964" fetchPriority="high" decoding="async" alt="Sreekesh and Karthika together" /></div>
+          <div className="portrait-frame"><img src={config.images.couple} width="1000" height="964" fetchPriority="high" decoding="async" alt={`${config.couple.english} together`} /></div>
         </div>
         <div className="hero-copy"><p className="eyebrow">Save the date · 24 Jan 2027</p><h1><span>{config.couple.groom}</span><i>&</i><span>{config.couple.bride}</span></h1><div className="fine-rule" aria-hidden="true">✦</div><p className="malayalam-welcome">ഞങ്ങളുടെ വിവാഹത്തിലേക്ക്<br/>സ്നേഹപൂർവ്വം സ്വാഗതം</p>
           <nav className="quick-actions" aria-label="Invitation actions"><a href={whatsappShareUrl} aria-label="Share invitation on WhatsApp"><Share2 /><span>Share</span></a><a href={config.wedding.maps} target="_blank" rel="noreferrer"><MapPin /><span>Location</span></a><button onClick={() => downloadCalendar("wedding")}><CalendarDays /><span>Calendar</span></button></nav>
@@ -225,12 +225,12 @@ export default function App() {
 
       <section className="events" id="events"><BackgroundArt variant="events" /><SectionHeading eyebrow="Join our celebrations">Two Days, One Beautiful Beginning</SectionHeading><div className="event-list"><EventCard type="wedding"/><EventCard type="reception"/></div></section>
 
-      <section className="closing"><BackgroundArt variant="closing" /><span className="closing-mark">SK</span><p>നിങ്ങളുടെ സാന്നിധ്യവും അനുഗ്രഹവും<br/>ഞങ്ങൾക്ക് അമൂല്യമാണ്</p><h2>With love, we await you.</h2><div className="closing-actions"><a className="button gold" href={whatsappShareUrl}><Share2 />Share on WhatsApp</a><a className="button outline" href="./assets/couple/letter-of-invite.jpeg" download="Sreekesh-Karthika-Invitation.jpeg"><Download />Download Invitation Letter</a></div><Heart className="heart" aria-hidden="true" /></section>
+      <section className="closing"><BackgroundArt variant="closing" /><span className="closing-mark">SK</span><p>നിങ്ങളുടെ സാന്നിധ്യവും അനുഗ്രഹവും<br/>ഞങ്ങൾക്ക് അമൂല്യമാണ്</p><h2>With love, we await you.</h2><div className="closing-actions"><a className="button gold" href={whatsappShareUrl}><Share2 />Share on WhatsApp</a><a className="button outline" href="./assets/couple/letter-of-invite.jpeg" download="Sreekesh-Kashmeera-Invitation.jpeg"><Download />Download Invitation Letter</a></div><Heart className="heart" aria-hidden="true" /></section>
       <section className="couple-intro" aria-label="The bride and groom">
         <BackgroundArt variant="closing" />
         <SectionHeading eyebrow="A new chapter">The Bride &amp; Groom</SectionHeading>
         <div className="couple-portraits">
-          <figure><div className="individual-portrait"><img src={config.images.bride} alt="Karthika, the bride, at a temple" width="406" height="351" loading="lazy" decoding="async" /></div><figcaption><span>The bride</span><h3>{config.couple.bride}</h3></figcaption></figure>
+          <figure><div className="individual-portrait"><img src={config.images.bride} alt="Kashmeera, the bride, at a temple" width="406" height="351" loading="lazy" decoding="async" /></div><figcaption><span>The bride</span><h3>{config.couple.bride}</h3></figcaption></figure>
           <figure><div className="individual-portrait"><img src={config.images.groom} alt="Sreekesh, the groom, at a temple" width="458" height="458" loading="lazy" decoding="async" /></div><figcaption><span>The groom</span><h3>{config.couple.groom}</h3></figcaption></figure>
         </div>
       </section>

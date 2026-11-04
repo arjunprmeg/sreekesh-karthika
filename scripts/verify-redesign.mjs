@@ -15,6 +15,8 @@ for (const [type, start, end] of [["wedding", "20270124T030000Z", "20270124T0400
   assert.ok(calendar.includes(`DTSTART:${start}\r\nDTEND:${end}`))
   assert.ok(calendar.endsWith("END:VCALENDAR\r\n"))
   assert.ok(calendar.includes("LOCATION:"))
+  assert.ok(calendar.includes("Sreekesh & Kashmeera"), "Calendar contains the corrected bride name")
+  assert.ok(!calendar.includes("Karthika"), "Calendar never displays the old bride name")
 }
 console.log("Both calendar events preserve Asia/Kolkata times via UTC serialization.")
 
@@ -98,6 +100,11 @@ try {
   assert.equal(await evaluate("[...document.querySelectorAll('.hero h1 > *')].every(el=>getComputedStyle(el).opacity==='1')"), true, "Names complete their staggered entrance")
   assert.equal(await evaluate("document.querySelector('main').inert"), false)
   assert.equal(await evaluate("document.querySelector('.cover').inert"), true)
+  assert.equal(await evaluate("document.querySelectorAll('h1 span')[1].textContent"), "കാശ്മീര")
+  assert.equal(await evaluate("document.querySelector('.cover-names').textContent.includes('കാശ്മീര')"), true)
+  assert.equal(await evaluate("[...document.querySelectorAll('.event-couple')].every(el=>el.textContent.includes('കാശ്മീര'))"), true)
+  assert.equal(await evaluate("document.querySelector('.couple-portraits figure h3').textContent"), "കാശ്മീര")
+  assert.equal(await evaluate("document.body.textContent.includes('കാർത്തിക')"), false)
   assert.equal(await evaluate("getComputedStyle(document.querySelector('.arch-art')).transform"), "none", "Arch remains stationary while lamps swing")
   assert.equal(await evaluate("document.querySelectorAll('.count').length"), 4)
   const before = await evaluate("document.querySelector('.countdown').getAttribute('aria-label')")
@@ -148,7 +155,7 @@ try {
   assert.equal(whatsappClicks.urls.length, 2, "Both Share controls navigate to WhatsApp")
   for (const href of whatsappClicks.urls) {
     const message = new URL(href).searchParams.get("text")
-    assert.ok(message.includes("ശ്രീകേഷ് & കാർത്തിക"))
+    assert.ok(message.includes("ശ്രീകേഷ് & കാശ്മീര"))
     assert.ok(message.includes("https://sreekesh-karthika.vercel.app/"))
     assert.ok(message.includes("24 ജനുവരി 2027"))
     assert.ok(message.includes("26 ജനുവരി 2027"))
@@ -167,7 +174,7 @@ try {
   await evaluate("document.querySelector('.closing-actions a[download]').click()")
   let letter
   for (let i = 0; i < 50; i++) {
-    try { letter = await readFile(join(reviewDir, "Sreekesh-Karthika-Invitation.jpeg")); break } catch { await wait(100) }
+    try { letter = await readFile(join(reviewDir, "Sreekesh-Kashmeera-Invitation.jpeg")); break } catch { await wait(100) }
   }
   assert.ok(letter, "Invitation letter downloads")
   assert.deepEqual(letter, await readFile("public/assets/couple/letter-of-invite.jpeg"), "Download matches the supplied JPEG")

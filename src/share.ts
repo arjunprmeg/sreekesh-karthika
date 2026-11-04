@@ -1,7 +1,7 @@
 import { weddingConfig } from "./config"
 
 export const whatsappShareUrl = `https://wa.me/?text=${encodeURIComponent([
-  "ശ്രീകേഷ് & കാർത്തിക 💛",
+  `${weddingConfig.couple.groom} & ${weddingConfig.couple.bride} 💛`,
   "ഞങ്ങളുടെ വിവാഹത്തിലേക്ക് സ്നേഹപൂർവ്വം ക്ഷണിക്കുന്നു.",
   "",
   "വിവാഹം: 24 ജനുവരി 2027, രാവിലെ 8:30–9:30, ഗുരുവായൂർ ക്ഷേത്രം.",
