@@ -1,30 +1,21 @@
 import { useEffect, useMemo, useRef, useState } from "react"
-import { CalendarDays, Check, ChevronDown, Copy, ExternalLink, Heart, MapPin, Share2, Volume2, VolumeX } from "lucide-react"
+import type { CSSProperties, PointerEvent } from "react"
+import { ArrowRight, CalendarDays, ChevronDown, Download, ExternalLink, Heart, MapPin, Share2, Volume2, VolumeX } from "lucide-react"
 import { weddingConfig as config } from "./config"
+import { buildCalendar } from "./calendar"
 
 const pad = (n: number) => String(n).padStart(2, "0")
 
-function formatIcsDate(date: Date) {
-  return date.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "")
-}
-
 function downloadCalendar(type: "wedding" | "reception") {
-  const event = config[type]
-  const title = type === "wedding" ? "Wedding of Sreekesh & Karthika" : "Wedding Reception of Sreekesh & Karthika"
-  const ics = [
-    "BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Sreekesh & Karthika//Wedding Invitation//EN", "CALSCALE:GREGORIAN",
-    "BEGIN:VEVENT", `UID:${type}-sreekesh-karthika-2027`, `DTSTAMP:${formatIcsDate(new Date())}`,
-    `DTSTART:${formatIcsDate(new Date(event.start))}`, `DTEND:${formatIcsDate(new Date(event.end))}`,
-    `SUMMARY:${title}`, `LOCATION:${event.venue.replace(/,/g, "\\,")}`,
-    `DESCRIPTION:With love, we invite you to celebrate with us. Directions: ${event.maps}`,
-    "END:VEVENT", "END:VCALENDAR",
-  ].join("\r\n")
+  const ics = buildCalendar(type)
   const url = URL.createObjectURL(new Blob([ics], { type: "text/calendar;charset=utf-8" }))
   const link = document.createElement("a")
   link.href = url
   link.download = `${type}-sreekesh-karthika.ics`
+  document.body.append(link)
   link.click()
-  URL.revokeObjectURL(url)
+  link.remove()
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000)
 }
 
 function Countdown() {
@@ -44,18 +35,100 @@ function Countdown() {
   </div>
 }
 
+function BackgroundArt({ variant }: { variant: "cover" | "hero" | "blessing" | "countdown" | "events" | "closing" }) {
+  const artwork = (name: string, position: string) => <img key={`${name}-${position}`} className={`bg-art bg-art-${position}`} src={`./assets/bg/${name}.webp`} alt="" loading={variant === "cover" || variant === "hero" ? "eager" : "lazy"} decoding="async" />
+  return <div className={`section-art section-art-${variant}`} aria-hidden="true">
+    {variant === "cover" && <>{artwork("corner", "top-left")}{artwork("corner", "top-right")}{artwork("temple", "temple")}{artwork("lotus", "bottom-left")}{artwork("lotus", "bottom-right")}</>}
+    {variant === "hero" && <>{artwork("palm", "hero-left")}{artwork("lotus", "hero-right")}</>}
+    {variant === "blessing" && <>{artwork("mural", "mural-left")}{artwork("mural", "mural-right")}{artwork("corner", "bottom-left")}</>}
+    {variant === "countdown" && <>{artwork("temple", "temple")}{artwork("corner", "top-left")}{artwork("corner", "top-right")}</>}
+    {variant === "events" && <>{artwork("palm", "palm-left")}{artwork("palm", "palm-right")}{artwork("lotus", "bottom-left")}{artwork("lotus", "bottom-right")}</>}
+    {variant === "closing" && <>{artwork("corner", "top-left")}{artwork("corner", "top-right")}{artwork("lotus", "bottom-left")}{artwork("lotus", "bottom-right")}</>}
+  </div>
+}
+
+function HangingLamps() {
+  return <div className="hanging-lamps" aria-hidden="true">
+    <img className="hanging-lamp lamp-left" src="./assets/decor/lamp-left.webp" width="95" height="270" alt="" />
+    <img className="hanging-lamp lamp-right" src="./assets/decor/lamp-right.webp" width="95" height="270" alt="" />
+    <img className="hanging-lamp lamp-small-left" src="./assets/decor/lamp-small-left.webp" width="32" height="140" alt="" />
+    <img className="hanging-lamp lamp-small-right" src="./assets/decor/lamp-small-right.webp" width="32" height="140" alt="" />
+  </div>
+}
+
+function SlideToOpen({ onOpen }: { onOpen: () => void }) {
+  const trackRef = useRef<HTMLDivElement>(null)
+  const drag = useRef<{ pointerId: number; startX: number; distance: number } | null>(null)
+  const [offset, setOffset] = useState(0)
+  const [progress, setProgress] = useState(0)
+  const [dragging, setDragging] = useState(false)
+  const reset = () => {
+    drag.current = null
+    setDragging(false)
+    setOffset(0)
+    setProgress(0)
+  }
+  const pointerProgress = (event: PointerEvent<HTMLDivElement>) => {
+    if (!drag.current || drag.current.pointerId !== event.pointerId) return null
+    return Math.max(0, Math.min(1, (event.clientX - drag.current.startX) / drag.current.distance))
+  }
+  const keyboardProgress = (value: number) => {
+    const next = Math.max(0, Math.min(100, value))
+    setProgress(next)
+    setOffset((trackRef.current!.clientWidth - 64) * next / 100)
+    if (next === 100) onOpen()
+  }
+  return <div className={`slide-track ${dragging ? "is-dragging" : ""}`} ref={trackRef}
+    role="slider" tabIndex={0} aria-label="Slide to open invitation" aria-orientation="horizontal"
+    aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress)}
+    aria-valuetext={progress >= 90 ? "Release to open" : "Slide right to open; or press Enter"}
+    style={{ "--slide-offset": `${offset}px` } as CSSProperties}
+    onPointerDown={(event) => {
+      if (event.button !== 0 || !(event.target as Element).closest(".slide-thumb")) return
+      event.preventDefault()
+      event.currentTarget.setPointerCapture(event.pointerId)
+      drag.current = { pointerId: event.pointerId, startX: event.clientX - offset, distance: event.currentTarget.clientWidth - 64 }
+      setDragging(true)
+    }}
+    onPointerMove={(event) => {
+      const value = pointerProgress(event)
+      if (value === null) return
+      setOffset(value * drag.current!.distance)
+      setProgress(value * 100)
+    }}
+    onPointerUp={(event) => {
+      const value = pointerProgress(event)
+      if (value === null) return
+      if (value >= .9) { drag.current = null; setDragging(false); onOpen() }
+      else reset()
+    }}
+    onPointerCancel={reset}
+    onLostPointerCapture={() => { if (drag.current) reset() }}
+    onKeyDown={(event) => {
+      if (["Enter", " ", "End", "ArrowRight", "ArrowLeft", "Home"].includes(event.key)) {
+        event.preventDefault()
+        if (event.key === "Enter" || event.key === " " || event.key === "End") keyboardProgress(100)
+        else if (event.key === "Home") keyboardProgress(0)
+        else keyboardProgress(progress + (event.key === "ArrowRight" ? 20 : -20))
+      }
+    }}>
+    <span className="slide-label" aria-hidden="true" style={{ opacity: Math.max(0, 1 - progress / 70) }}>slide to open</span>
+    <span className="slide-thumb" aria-hidden="true"><ArrowRight /></span>
+  </div>
+}
+
 function InvitationCover({ open, onOpen }: { open: boolean; onOpen: () => void }) {
-  const startX = useRef<number | null>(null)
-  return <div className={`cover ${open ? "is-open" : ""}`} aria-hidden={open} onClick={onOpen}
-    onTouchStart={(e) => { startX.current = e.touches[0].clientX }}
-    onTouchEnd={(e) => { if (startX.current !== null && Math.abs(e.changedTouches[0].clientX - startX.current) > 45) onOpen() }}>
-    <button className="cover-trigger" onClick={onOpen} aria-label="Open wedding invitation">
+  return <div className={`cover ${open ? "is-open" : ""}`} role="dialog" aria-label="Wedding invitation cover" aria-modal={!open} aria-hidden={open} inert={open}>
+    <BackgroundArt variant="cover" />
+    <div className="cover-lamp-stage"><HangingLamps /></div>
+    <div className="cover-content">
       <span className="cover-kicker">Together with their families</span>
+      <span className="cover-seal" aria-hidden="true">SK</span>
       <span className="cover-names">ശ്രീകേഷ് <i>&</i> കാർത്തിക</span>
       <span className="cover-save">Save the Date</span>
       <span className="cover-date">24 · January · 2027</span>
-      <span className="open-pill">Swipe or tap to open <ChevronDown /></span>
-    </button>
+    </div>
+    <SlideToOpen onOpen={onOpen} />
     <div className="door door-left" /><div className="door door-right" />
   </div>
 }
@@ -68,7 +141,7 @@ function EventCard({ type }: { type: "wedding" | "reception" }) {
   const event = config[type]
   const wedding = type === "wedding"
   return <article className={`event-card ${type}`}>
-    <div className="event-image"><img src={wedding ? config.images.templeFacade : config.images.floral} alt={wedding ? "Guruvayur Sri Krishna Temple facade in warm evening light" : "Peacock feathers with a golden flower on blue watercolor"} /></div>
+    {wedding && <div className="event-image"><img loading="lazy" decoding="async" width="800" height="480" src={config.images.templeFacade} alt="Guruvayur Sri Krishna Temple" /></div>}
     <div className="event-content">
       <span className="event-number">{wedding ? "01" : "02"}</span>
       <p className="event-kicker">{wedding ? "The sacred ceremony" : "An afternoon of celebration"}</p>
@@ -82,10 +155,17 @@ function EventCard({ type }: { type: "wedding" | "reception" }) {
 
 export default function App() {
   const [opened, setOpened] = useState(false)
-  const [copied, setCopied] = useState(false)
+  const [shareCopied, setShareCopied] = useState(false)
   const audioRef = useRef<HTMLAudioElement>(null)
   const musicEnabled = useRef(true)
   const [musicPlaying, setMusicPlaying] = useState(false)
+  const mainRef = useRef<HTMLElement>(null)
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow
+    if (!opened) document.body.style.overflow = "hidden"
+    else mainRef.current?.focus({ preventScroll: true })
+    return () => { document.body.style.overflow = previousOverflow }
+  }, [opened])
   const playMusic = () => {
     const audio = audioRef.current
     if (audio) {
@@ -112,15 +192,15 @@ export default function App() {
   const copyLink = async () => {
     const url = window.location.href
     try { await navigator.clipboard.writeText(url) } catch { const area = document.createElement("textarea"); area.value = url; document.body.append(area); area.select(); document.execCommand("copy"); area.remove() }
-    setCopied(true); window.setTimeout(() => setCopied(false), 2200)
+    setShareCopied(true); window.setTimeout(() => setShareCopied(false), 2200)
   }
   const share = async () => {
     const text = "ശ്രീകേഷിന്റെയും കാർത്തികയുടെയും വിവാഹത്തിലേക്ക് സ്നേഹപൂർവ്വം ക്ഷണിക്കുന്നു. 💛\n\nവിവാഹം: 24 ജനുവരി 2027, ഗുരുവായൂർ ക്ഷേത്രം.\nവിവാഹ സൽക്കാരം: 26 ജനുവരി 2027, രശ്മിവരം, പയ്യോളി."
-    if (navigator.share) { try { await navigator.share({ title: "Sreekesh & Karthika — Wedding Invitation", text, url: window.location.href }); return } catch { return } }
+    if (navigator.share) { try { await navigator.share({ title: "Sreekesh & Karthika — Wedding Invitation", text, url: window.location.href }); return } catch (error) { if (error instanceof Error && error.name === "AbortError") return } }
     await copyLink()
   }
   return <>
-    <audio ref={audioRef} src="./assets/Thanthaay.mp3" autoPlay loop preload="auto"
+    <audio ref={audioRef} src="./assets/Thanthaay.mp3" autoPlay loop preload="metadata"
       onPlay={() => setMusicPlaying(true)} onPause={() => setMusicPlaying(false)}
       onError={() => setMusicPlaying(false)} />
     <button type="button" className="music-toggle" onClick={toggleMusic}
@@ -130,23 +210,41 @@ export default function App() {
       <span>Music {musicPlaying ? "on" : "off"}</span>
     </button>
     <InvitationCover open={opened} onOpen={openInvitation} />
-    <main className={opened ? "revealed" : ""}>
+    <main ref={mainRef} tabIndex={-1} inert={!opened} className={opened ? "revealed" : ""}>
       <section className="hero" id="home">
-        <div className="hero-art"><div className="portrait-frame"><img src={config.images.couple} alt="Sreekesh and Karthika together" /></div></div>
-        <div className="hero-copy"><p className="eyebrow">Save the date · 24.01.2027</p><h1><span>ശ്രീകേഷ്</span><i>&</i><span>കാർത്തിക</span></h1><p className="malayalam-welcome">ഞങ്ങളുടെ വിവാഹത്തിലേക്ക്<br/>സ്നേഹപൂർവ്വം സ്വാഗതം</p><p className="date-line">24 January 2027 <b>·</b> Sunday</p><a href="#blessing" className="scroll-cue">Begin our story <ChevronDown /></a></div>
+        <BackgroundArt variant="hero" />
+        <div className="hero-art">
+          <img className="arch-art" src="./assets/decor/arch-without-lamps.webp" width="941" height="890" alt="" aria-hidden="true" />
+          <HangingLamps />
+          <div className="portrait-frame"><img src={config.images.couple} width="1000" height="964" fetchPriority="high" decoding="async" alt="Sreekesh and Karthika together" /></div>
+        </div>
+        <div className="hero-copy"><p className="eyebrow">Save the date · 24 Jan 2027</p><h1><span>{config.couple.groom}</span><i>&</i><span>{config.couple.bride}</span></h1><div className="fine-rule" aria-hidden="true">✦</div><p className="malayalam-welcome">ഞങ്ങളുടെ വിവാഹത്തിലേക്ക്<br/>സ്നേഹപൂർവ്വം സ്വാഗതം</p>
+          <nav className="quick-actions" aria-label="Invitation actions"><button onClick={share}><Share2 /><span>Share</span></button><a href={config.wedding.maps} target="_blank" rel="noreferrer"><MapPin /><span>Location</span></a><button onClick={() => downloadCalendar("wedding")}><CalendarDays /><span>Calendar</span></button></nav>
+          <a href="#blessing" className="scroll-cue">Our celebration <ChevronDown /></a>
+        </div>
+        <img className="lotus-art" src="./assets/decor/lotus-footer.webp" width="941" height="281" alt="" aria-hidden="true" />
       </section>
 
       <section className="blessing" id="blessing">
-        <div className="blessing-image"><img src={config.images.templeWide} alt="Pilgrims walking through the Guruvayur Temple complex at sunset" /></div>
+        <BackgroundArt variant="blessing" />
+        <div className="blessing-image"><img loading="lazy" decoding="async" width="800" height="600" src={config.images.templeWide} alt="Guruvayur Temple complex at sunset" /></div>
         <div className="blessing-copy"><span className="peacock-mark">❧</span><SectionHeading eyebrow="With divine grace">ശ്രീ ഗുരുവായൂരപ്പന്റെ അനുഗ്രഹത്തോടെ</SectionHeading><p>ഭഗവാന്റെ അനുഗ്രഹത്താൽ ഞങ്ങളുടെ ജീവിതത്തിലെ പുതിയൊരു അധ്യായത്തിന് തുടക്കമാകുന്നു.</p><p className="english-blessing">With Lord Guruvayurappan&apos;s blessings, we begin a new chapter of our lives.</p></div>
       </section>
 
-      <section className="countdown-section"><SectionHeading eyebrow="Until we say yes">The Auspicious Moment</SectionHeading><Countdown /></section>
+      <section className="countdown-section"><BackgroundArt variant="countdown" /><SectionHeading eyebrow="Until we say yes">The Auspicious Moment</SectionHeading><Countdown /></section>
 
-      <section className="events" id="events"><SectionHeading eyebrow="Join our celebrations">Two Days, One Beautiful Beginning</SectionHeading><div className="event-list"><EventCard type="wedding"/><EventCard type="reception"/></div></section>
+      <section className="events" id="events"><BackgroundArt variant="events" /><SectionHeading eyebrow="Join our celebrations">Two Days, One Beautiful Beginning</SectionHeading><div className="event-list"><EventCard type="wedding"/><EventCard type="reception"/></div></section>
 
-      <section className="closing"><span className="closing-mark">SK</span><p>നിങ്ങളുടെ സാന്നിധ്യവും അനുഗ്രഹവും<br/>ഞങ്ങൾക്ക് അമൂല്യമാണ്</p><h2>With love, we await you.</h2><div className="closing-actions"><button className="button gold" onClick={share}><Share2 />Share Invitation</button><button className="button outline" onClick={copyLink}>{copied ? <Check /> : <Copy />}{copied ? "Link Copied!" : "Copy Link"}</button></div><Heart className="heart" aria-hidden="true" /></section>
+      <section className="closing"><BackgroundArt variant="closing" /><span className="closing-mark">SK</span><p>നിങ്ങളുടെ സാന്നിധ്യവും അനുഗ്രഹവും<br/>ഞങ്ങൾക്ക് അമൂല്യമാണ്</p><h2>With love, we await you.</h2><div className="closing-actions"><button className="button gold" onClick={share}><Share2 />Share Invitation</button><a className="button outline" href="./assets/couple/letter-of-invite.jpeg" download="Sreekesh-Karthika-Invitation.jpeg"><Download />Download Invitation Letter</a></div><p className="share-status" role="status">{shareCopied ? "Invitation link copied — ready to share." : ""}</p><Heart className="heart" aria-hidden="true" /></section>
+      <section className="couple-intro" aria-label="The bride and groom">
+        <BackgroundArt variant="closing" />
+        <SectionHeading eyebrow="A new chapter">The Bride &amp; Groom</SectionHeading>
+        <div className="couple-portraits">
+          <figure><div className="individual-portrait"><img src={config.images.bride} alt="Karthika, the bride, at a temple" width="406" height="351" loading="lazy" decoding="async" /></div><figcaption><span>The bride</span><h3>{config.couple.bride}</h3></figcaption></figure>
+          <figure><div className="individual-portrait"><img src={config.images.groom} alt="Sreekesh, the groom, at a temple" width="458" height="458" loading="lazy" decoding="async" /></div><figcaption><span>The groom</span><h3>{config.couple.groom}</h3></figcaption></figure>
+        </div>
+      </section>
+      <footer className="site-credit">Made with love by <a href="https://kadathanadtimes.com/contact" target="_blank" rel="noopener noreferrer">Team KTimes</a></footer>
     </main>
-    {opened && <nav className="quick-actions" aria-label="Invitation actions"><button onClick={share} aria-label="Share invitation"><Share2 /></button><a href={config.wedding.maps} target="_blank" rel="noreferrer" aria-label="Wedding location"><MapPin /></a><button onClick={() => downloadCalendar("wedding")} aria-label="Add wedding to calendar"><CalendarDays /></button></nav>}
   </>
 }
