@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react"
-import { CalendarDays, Check, ChevronDown, Copy, ExternalLink, Heart, MapPin, Share2 } from "lucide-react"
+import { CalendarDays, Check, ChevronDown, Copy, ExternalLink, Heart, MapPin, Share2, Volume2, VolumeX } from "lucide-react"
 import { weddingConfig as config } from "./config"
 
 const pad = (n: number) => String(n).padStart(2, "0")
@@ -83,6 +83,32 @@ function EventCard({ type }: { type: "wedding" | "reception" }) {
 export default function App() {
   const [opened, setOpened] = useState(false)
   const [copied, setCopied] = useState(false)
+  const audioRef = useRef<HTMLAudioElement>(null)
+  const musicEnabled = useRef(true)
+  const [musicPlaying, setMusicPlaying] = useState(false)
+  const playMusic = () => {
+    const audio = audioRef.current
+    if (audio) {
+      audio.volume = 0.45
+      void audio.play().catch(() => { /* The music button remains available if autoplay is blocked. */ })
+    }
+  }
+  useEffect(() => {
+    playMusic()
+  }, [])
+  const openInvitation = () => {
+    setOpened(true)
+    if (musicEnabled.current) playMusic()
+  }
+  const toggleMusic = () => {
+    if (audioRef.current && !audioRef.current.paused) {
+      musicEnabled.current = false
+      audioRef.current.pause()
+    } else {
+      musicEnabled.current = true
+      playMusic()
+    }
+  }
   const copyLink = async () => {
     const url = window.location.href
     try { await navigator.clipboard.writeText(url) } catch { const area = document.createElement("textarea"); area.value = url; document.body.append(area); area.select(); document.execCommand("copy"); area.remove() }
@@ -94,7 +120,16 @@ export default function App() {
     await copyLink()
   }
   return <>
-    <InvitationCover open={opened} onOpen={() => setOpened(true)} />
+    <audio ref={audioRef} src="./assets/Thanthaay.mp3" autoPlay loop preload="auto"
+      onPlay={() => setMusicPlaying(true)} onPause={() => setMusicPlaying(false)}
+      onError={() => setMusicPlaying(false)} />
+    <button type="button" className="music-toggle" onClick={toggleMusic}
+      aria-label={musicPlaying ? "Turn background music off" : "Turn background music on"}
+      aria-pressed={musicPlaying}>
+      {musicPlaying ? <Volume2 aria-hidden="true" /> : <VolumeX aria-hidden="true" />}
+      <span>Music {musicPlaying ? "on" : "off"}</span>
+    </button>
+    <InvitationCover open={opened} onOpen={openInvitation} />
     <main className={opened ? "revealed" : ""}>
       <section className="hero" id="home">
         <div className="hero-art"><div className="portrait-frame"><img src={config.images.couple} alt="Sreekesh and Karthika together outdoors" /></div></div>
